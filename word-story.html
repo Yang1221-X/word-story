@@ -1,0 +1,1126 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordStory - 单词故事</title>
+<style>
+:root{--bg:#faf9f6;--s:#fff;--s2:#f0ede8;--t:#1a1a1a;--t2:#666;--t3:#999;--ac:#e8594f;--a2:#e67e22;--hi:#fff3cd;--hit:#856404;--hib:rgba(255,193,7,.3);--b:#e5e0d8;--sh:0 2px 16px rgba(0,0,0,.06);--r:14px;--subj:#4a90d9;--verb:#e8594f;--obj:#27ae60;--advb:#8e44ad;--det:#999}
+[data-theme="dark"]{--bg:#1a1a1a;--s:#252525;--s2:#333;--t:#e8e8e8;--t2:#999;--t3:#666;--ac:#ff6b6b;--a2:#ffa94d;--hi:rgba(255,193,7,.15);--hit:#ffc107;--hib:rgba(255,193,7,.25);--b:#3a3a3a;--sh:0 2px 16px rgba(0,0,0,.3);--subj:#6db3f2;--verb:#ff6b6b;--obj:#4cd080;--advb:#b373d6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;transition:background .3s,color .3s;line-height:1.7}
+.ct{max-width:800px;margin:0 auto;padding:24px 20px 60px}
+.hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.logo{font-family:Georgia,serif;font-size:24px;font-weight:700;color:var(--ac)}
+.ha{display:flex;gap:8px;align-items:center}
+.ib{padding:8px 14px;border:1.5px solid var(--b);background:var(--s);border-radius:22px;cursor:pointer;font-size:13px;color:var(--t);transition:all .2s;font-family:inherit;white-space:nowrap}
+.ib:hover{background:var(--s2);border-color:var(--ac)}
+.lv-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:18px;scrollbar-width:none}
+.lv-bar::-webkit-scrollbar{display:none}
+.lv{flex-shrink:0;padding:9px 20px;border-radius:22px;border:1.5px solid var(--b);background:var(--s);color:var(--t2);font-size:14px;cursor:pointer;transition:all .2s;font-weight:500;font-family:inherit}
+.lv:hover{border-color:var(--ac);color:var(--ac)}
+.lv.act{background:var(--ac);color:#fff;border-color:var(--ac)}
+.lv .lv-n{font-size:11px;opacity:.7;font-weight:400;margin-left:2px}
+.lv.act .lv-n{opacity:.9}
+.word-panel{background:var(--s);border-radius:var(--r);border:1px solid var(--b);padding:20px 18px;margin-bottom:18px}
+.wp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.wp-top h3{font-size:14px;color:var(--t2);margin:0}
+.progress-mini{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t3)}
+.progress-mini .pbar{width:80px;height:6px;background:var(--b);border-radius:3px;overflow:hidden}
+.progress-mini .pfill{height:100%;background:var(--ac);border-radius:3px;transition:width .4s}
+.progress-mini .done-tag{background:#27ae60;color:#fff;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.word-tags{display:flex;flex-wrap:wrap;gap:8px}
+.wt{background:var(--s2);color:var(--t);padding:6px 14px;border-radius:20px;font-size:14px;cursor:pointer;transition:all .2s;font-weight:500;border:1.5px solid transparent;display:flex;align-items:center;gap:4px}
+.wt:hover{background:var(--hi);color:var(--hit);border-color:var(--hit)}
+.wt.used{opacity:.4;text-decoration:line-through}
+.wt .wtpos{font-size:10px;opacity:.5;text-transform:uppercase}
+.story-card{background:var(--s);border-radius:var(--r);border:1px solid var(--b);box-shadow:var(--sh);padding:28px 24px;margin-bottom:16px}
+.story-title{font-size:15px;font-weight:700;color:var(--ac);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--b)}
+.sentence-list{display:flex;flex-direction:column;gap:12px}
+.sen-block{padding:14px 18px;border-radius:12px;cursor:pointer;transition:all .25s;border:1.5px solid transparent;position:relative}
+.sen-block:hover{background:var(--s2);border-color:var(--b)}
+.sen-block.active{background:var(--hi);border-color:var(--hit)}
+.sen-block .en-text{font-family:Georgia,serif;font-size:19px;line-height:1.75;color:var(--t)}
+.hw{background:var(--hi);color:var(--hit);padding:1px 7px;border-radius:5px;cursor:pointer;font-weight:700;position:relative;transition:all .2s;border-bottom:2px solid var(--hib);white-space:nowrap}
+.hw:hover{filter:brightness(0.9)}
+.sen-tooltip{display:none;position:absolute;z-index:100;left:50%;transform:translateX(-50%);background:var(--s);border:1.5px solid var(--b);border-radius:14px;padding:18px 22px;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:300px;max-width:420px;top:calc(100% + 8px)}
+.sen-block:hover .sen-tooltip{display:block}
+.sen-tooltip .st-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;font-weight:600}
+.sen-tooltip .st-zh{font-size:15px;color:var(--t);line-height:1.5;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--b)}
+.sen-tooltip .st-struct{display:inline-block;background:var(--ac);color:#fff;padding:3px 12px;border-radius:12px;font-size:12px;font-weight:600;margin-bottom:10px}
+.sen-tooltip .st-grammar{font-size:13px;color:var(--t2);line-height:1.8}
+.sen-tooltip .st-grammar .gr{display:inline-block;padding:1px 7px;border-radius:5px;margin:0 2px;font-weight:600;font-size:12px}
+.sen-tooltip .st-grammar .gr.sbj{background:rgba(74,144,217,.12);color:var(--subj)}
+.sen-tooltip .st-grammar .gr.vb{background:rgba(232,89,79,.1);color:var(--verb)}
+.sen-tooltip .st-grammar .gr.obj{background:rgba(39,174,96,.1);color:var(--obj)}
+.sen-tooltip .st-grammar .gr.adv{background:rgba(142,68,173,.1);color:var(--advb)}
+.sen-tooltip .st-grammar .gr.det{color:var(--det)}
+.word-popup{position:fixed;z-index:200;background:var(--s);border:1.5px solid var(--b);border-radius:14px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,.18);max-width:360px;opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;pointer-events:none}
+.word-popup.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.word-popup .wp-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.word-popup .wp-word{font-family:Georgia,serif;font-size:20px;font-weight:700;color:var(--ac)}
+.word-popup .wp-pos{font-size:12px;color:var(--t3);background:var(--s2);padding:2px 8px;border-radius:8px}
+.word-popup .wp-meaning{font-size:14px;color:var(--t);margin-bottom:10px}
+.word-popup .wp-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.word-popup .wp-example{font-family:Georgia,serif;font-size:14px;color:var(--t2);font-style:italic;line-height:1.5;padding:8px 12px;background:var(--s2);border-radius:8px;margin-top:4px}
+.nb{display:flex;justify-content:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.nb button{padding:10px 20px;border-radius:22px;border:1.5px solid var(--b);background:var(--s);cursor:pointer;font-size:14px;color:var(--t);transition:all .2s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.nb button:hover{border-color:var(--ac)}
+.nb button:disabled{opacity:.4;cursor:default}
+.nb button.pri{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+.nb button.sec{border-color:var(--a2);color:var(--a2)}
+.nb button.pl{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,89,79,.3)}50%{box-shadow:0 0 0 10px rgba(232,89,79,0)}}
+.api-panel{background:var(--s);border-radius:var(--r);border:1px solid var(--b);padding:18px;margin-top:16px}
+.api-panel summary{font-size:14px;color:var(--t2);cursor:pointer;font-weight:500}
+.api-panel summary:hover{color:var(--ac)}
+.api-inner{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.api-inner input{width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--b);background:var(--s2);color:var(--t);font-size:13px;font-family:inherit;outline:none}
+.api-inner input:focus{border-color:var(--ac)}
+.fl{display:grid;gap:8px}
+.fi{background:var(--s2);border-radius:12px;padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.fi:hover{background:var(--hi)}
+.fi .fn{font-family:Georgia,serif;font-size:14px;flex:1}
+.fi .fs{font-size:12px;color:var(--t3);white-space:nowrap}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-120px);background:var(--s);color:var(--t);padding:12px 24px;border-radius:25px;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.15);z-index:300;transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media(max-width:600px){.ct{padding:14px 10px 40px}.story-card{padding:18px 14px}.sen-block .en-text{font-size:16px}.sen-tooltip{min-width:260px;max-width:90vw}.word-popup{max-width:280px}}
+</style>
+</head>
+<body data-theme="light">
+<div class="ct">
+<div class="hd"><div class="logo">📖 WordStory <span style="font-size:13px;color:var(--t3);font-weight:400">单词故事</span></div><div class="ha"><button class="ib" onclick="toggleFavPanel()">⭐ 收藏 <span id="fc">0</span></button><button class="ib" id="tb" onclick="toggleTheme()">🌙 暗色</button><button class="ib" onclick="resetLevel()">🔄 重置进度</button></div></div>
+<div class="lv-bar" id="lvBar"></div>
+<div class="word-panel" id="wp"><div class="wp-top"><h3>📝 本故事目标词汇</h3><div class="progress-mini">已学 <b id="pu">0</b>/<span id="ptotal">0</span> 词 <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div><span class="done-tag" id="doneTag" style="display:none">✅ 全部学完</span></div></div><div class="word-tags" id="wordTags"></div></div>
+<div class="story-card" id="sc"><div class="story-title" id="stitle"></div><div class="sentence-list" id="stext"></div></div>
+<div class="nb"><button id="pb" onclick="goPrev()" disabled>⬅ 上一句</button><button class="pri pl" id="sb" onclick="speakSent()">🔊 朗读本句</button><button class="sec" id="fb" onclick="toggleFav()">🤍 收藏</button><button id="nb2" onclick="goNext()">下一句 ➡</button></div>
+<div class="nb" style="margin-top:6px"><button onclick="regenerate()">🔄 换一组词，重新生成</button></div>
+<details class="api-panel"><summary>🤖 使用 GPT API 生成更自然的故事</summary><div class="api-inner"><input id="ape" placeholder="API Endpoint (https://api.openai.com/v1/chat/completions)"><input id="apk" type="password" placeholder="API Key"><button id="ab" onclick="genStoryAPI()" style="padding:10px;border-radius:10px;border:none;background:var(--ac);color:#fff;cursor:pointer;font-size:14px;font-family:inherit">✨ API 生成故事</button><div id="astatus" style="font-size:12px;color:var(--t3);margin-top:4px"></div></div></details>
+<div id="fp" style="display:none;margin-top:20px;padding-top:18px;border-top:1px solid var(--b)"><h3 style="margin-bottom:12px">⭐ 我的收藏 <span id="fpdone" style="font-size:12px;color:var(--t3);font-weight:400"></span></h3><div class="fl" id="flist"></div></div>
+</div>
+<div class="word-popup" id="wordPopup"><div class="wp-head"><span class="wp-word" id="wpWord"></span><span class="wp-pos" id="wpPos"></span></div><div class="wp-meaning" id="wpMeaning"></div><div class="wp-label">📝 例句</div><div class="wp-example" id="wpExample"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ WORD BANKS ============
+var WB={
+primary:[
+["a/an","一个（件……）","art.","There is a/an park."],
+["about","关于","prep.","She walked about the room."],
+["after","在……之后","prep.","The book is after the desk."],
+["afternoon","下午","n.","The afternoon was beautiful."],
+["again","再一次，又一次","adv.","He ran again to catch up."],
+["age","年龄","n.","I saw a age today."],
+["ago","以前","adv.","He ran ago to catch up."],
+["air","空气","n.","The air was beautiful."],
+["all","全部的","adj.","What a all day."],
+["also","也","adv.","She answered also."],
+["always","总是","adv.","She answered always."],
+["and","和，与","conj.","She came and he left."],
+["angry","生气的","adj.","I feel angry today."],
+["animal","动物","n.","I saw a animal today."],
+["answer","回答","n.","The answer was beautiful."],
+["any","任何的","adj.","What a any day."],
+["apple","苹果","n.","I saw a apple today."],
+["arm","手臂","n.","We talked about the arm."],
+["art","艺术","n.","We talked about the art."],
+["ask","问，请求","v.","She learned to ask quickly."],
+["astronaut","宇航员","n.","The astronaut was beautiful."],
+["at","在（某处或某时）","prep.","Sit at the window."],
+["aunt","姑母","n.","We talked about the aunt."],
+["autumn","秋天","n.","The autumn was beautiful."],
+["back","背部","n.","We talked about the back."],
+["bad","坏的","adj.","What a bad day."],
+["bag","包，袋","n.","The bag was beautiful."],
+["ball","球","n.","I saw a ball today."],
+["banana","香蕉","n.","The banana was beautiful."],
+["basketball","篮球","n.","I saw a basketball today."],
+["beach","海滩","n.","We talked about the beach."],
+["bear","熊","n.","I saw a bear today."],
+["beautiful","美丽的","adj.","That is so beautiful."],
+["because","因为","conj.","She came because he left."],
+["bed","床","n.","I saw a bed today."],
+["bee","蜜蜂","n.","I saw a bee today."],
+["before","在……之前","prep.","The book is before the desk."],
+["begin","开始","v.","I like to begin every day."],
+["behind","在……后面","prep.","She walked behind the room."],
+["beside","在……旁边","prep.","The book is beside the desk."],
+["best","最好的","adj.","What a best day."],
+["between","在……（两者）之间","prep.","Sit between the window."],
+["big","大的","adj.","What a big day."],
+["bird","鸟","n.","We talked about the bird."],
+["birthday","生日","n.","The birthday was beautiful."],
+["black","黑色的","adj.","I feel black today."],
+["blackboard","黑板","n.","The blackboard was beautiful."],
+["blue","蓝色的","adj.","I feel blue today."],
+["boat","小船","n.","We talked about the boat."],
+["body","身体","n.","I saw a body today."],
+["book","书","n.","I saw a book today."],
+["box","箱子，盒子","n.","We talked about the box."],
+["boy","男孩","n.","I saw a boy today."],
+["bread","面包","n.","I saw a bread today."],
+["breakfast","早餐","n.","I saw a breakfast today."],
+["bring","带来","v.","She learned to bring quickly."],
+["brother","兄，弟","n.","I saw a brother today."],
+["brown","棕色的","adj.","I feel brown today."],
+["bus","公共汽车","n.","We talked about the bus."],
+["busy","忙碌的","adj.","I feel busy today."],
+["but","但是","conj.","Wait but I return."],
+["buy","买","v.","She learned to buy quickly."],
+["by","通过，乘坐，被","prep.","The book is by the desk."],
+["cake","蛋糕","n.","We talked about the cake."],
+["call","打电话","v.","I like to call every day."],
+["can","能，会","modal v.","He can do it."],
+["candle","蜡烛","n.","The candle was beautiful."],
+["candy","糖果","n.","I saw a candy today."],
+["cap","（无檐或仅前面有檐的）帽子","n.","I saw a cap today."],
+["car","小汽车","n.","We talked about the car."],
+["card","卡片","n.","The card was beautiful."],
+["careful","小心的","adj.","I feel careful today."],
+["cat","猫","n.","The cat was beautiful."],
+["catch","抓住","v.","Let us catch together."],
+["chair","椅子","n.","The chair was beautiful."],
+["chicken","鸡","n.","The chicken was beautiful."],
+["China","中国","n.","I saw a China today."],
+["Chinese","中国的","adj.","I feel Chinese today."],
+["chore","家务杂事","n.","I saw a chore today."],
+["cinema","电影院","n.","We talked about the cinema."],
+["city","城市","n.","The city was beautiful."],
+["class","班级","n.","The class was beautiful."],
+["classroom","教室","n.","The classroom was beautiful."],
+["clean","干净的","adj.","What a clean day."],
+["clever","聪明的","adj.","What a clever day."],
+["clock","时钟","n.","The clock was beautiful."],
+["close","亲密的","adj.","What a close day."],
+["clothes","衣服","n.","The clothes was beautiful."],
+["cloudy","多云的","adj.","That is so cloudy."],
+["coat","外套，大衣","n.","I saw a coat today."],
+["cold","冷的","adj.","What a cold day."],
+["colour","颜色","n.","We talked about the colour."],
+["come","来","v.","I like to come every day."],
+["computer","计算机，电脑","n.","The computer was beautiful."],
+["cook","烹调，煮","v.","Let us cook together."],
+["cool","凉爽的","adj.","What a cool day."],
+["cousin","堂（表）兄弟","n.","We talked about the cousin."],
+["cow","奶牛","n.","I saw a cow today."],
+["cry","哭","v.","Let us cry together."],
+["cup","杯子","n.","I saw a cup today."],
+["cute","可爱的","adj.","What a cute day."],
+["dance","跳舞","v.","Let us dance together."],
+["day","天，日","n.","I saw a day today."],
+["dear","亲爱的","adj.","What a dear day."],
+["desk","书桌","n.","We talked about the desk."],
+["difficult","困难的","adj.","I feel difficult today."],
+["dinner","正餐，晚餐","n.","We talked about the dinner."],
+["dirty","脏的","adj.","What a dirty day."],
+["do","做，干（助动词）","v.","Let us do together."],
+["doctor","医生","n.","I saw a doctor today."],
+["dog","狗","n.","I saw a dog today."],
+["doll","玩偶","n.","I saw a doll today."],
+["door","门","n.","The door was beautiful."],
+["down","向下","adv.","They nodded down."],
+["draw","画","v.","Let us draw together."],
+["dress","连衣裙","n.","I saw a dress today."],
+["drink","喝","v.","I like to drink every day."],
+["driver","司机","n.","We talked about the driver."],
+["duck","鸭子","n.","The duck was beautiful."],
+["ear","耳朵","n.","The ear was beautiful."],
+["early","早的","adj.","I feel early today."],
+["earth","地球","n.","We talked about the earth."],
+["easy","容易的","adj.","That is so easy."],
+["eat","吃","v.","She learned to eat quickly."],
+["egg","蛋","n.","I saw a egg today."],
+["elephant","大象","n.","The elephant was beautiful."],
+["email","电子邮件","n.","The email was beautiful."],
+["English","英国的","adj.","That is so English."],
+["evening","晚上","n.","The evening was beautiful."],
+["every","每个，每一","adj.","What a every day."],
+["excited","兴奋的","adj.","That is so excited."],
+["exercise","锻炼","n.","We talked about the exercise."],
+["eye","眼睛","n.","The eye was beautiful."],
+["face","脸","n.","The face was beautiful."],
+["family","家庭","n.","I saw a family today."],
+["famous","著名的","adj.","I feel famous today."],
+["fan","风扇","n.","I saw a fan today."],
+["far","远的","adj.","I feel far today."],
+["farm","农场","n.","I saw a farm today."],
+["farmer","农民","n.","We talked about the farmer."],
+["fast","快的","adj.","What a fast day."],
+["favourite","最喜欢的","adj.","What a favourite day."],
+["feel","感觉","v.","I like to feel every day."],
+["film","电影","n.","We talked about the film."],
+["find","找到，发现","v.","She learned to find quickly."],
+["fine","好的","adj.","That is so fine."],
+["fire","火","n.","We talked about the fire."],
+["fish","鱼","n.","We talked about the fish."],
+["floor","地板","n.","I saw a floor today."],
+["flower","花","n.","I saw a flower today."],
+["fly","飞","v.","I like to fly every day."],
+["food","食物","n.","The food was beautiful."],
+["football","足球","n.","I saw a football today."],
+["for","为了","prep.","Sit for the window."],
+["free","免费的","adj.","I feel free today."],
+["friend","朋友","n.","We talked about the friend."],
+["from","来自","prep.","Sit from the window."],
+["front","前面","n.","We talked about the front."],
+["fruit","水果","n.","I saw a fruit today."],
+["game","游戏","n.","The game was beautiful."],
+["garden","花园","n.","We talked about the garden."],
+["get","得到","v.","Let us get together."],
+["gift","礼物","n.","We talked about the gift."],
+["girl","女孩","n.","The girl was beautiful."],
+["give","给","v.","She learned to give quickly."],
+["glass","玻璃","n.","We talked about the glass."],
+["go","去","v.","Let us go together."],
+["good","好的","adj.","What a good day."],
+["grape","葡萄","n.","We talked about the grape."],
+["grass","草","n.","We talked about the grass."],
+["great","伟大的","adj.","I feel great today."],
+["green","绿色的","adj.","That is so green."],
+["hair","头发","n.","I saw a hair today."],
+["half","一半","n.","We talked about the half."],
+["hand","手","n.","We talked about the hand."],
+["happy","快乐的","adj.","What a happy day."],
+["hard","努力的","adj.","I feel hard today."],
+["he","他","pron.","he are very kind."],
+["head","头","n.","We talked about the head."],
+["healthy","健康的","adj.","What a healthy day."],
+["hear","听见","v.","Let us hear together."],
+["heavy","重的","adj.","That is so heavy."],
+["hello","喂，你好","interj.","hello! That is great."],
+["help","帮助","v.","I like to help every day."],
+["helpful","有帮助的","adj.","I feel helpful today."],
+["her","她的","pron.","her are very kind."],
+["here","这里","adv.","He ran here to catch up."],
+["hi","嗨","interj.","hi! That is great."],
+["hill","小山","n.","I saw a hill today."],
+["him","他（宾格）","pron.","him is my best friend."],
+["his","他的","pron.","his is my best friend."],
+["holiday","假日，假期","n.","I saw a holiday today."],
+["home","家","n.","The home was beautiful."],
+["hometown","家乡","n.","We talked about the hometown."],
+["horse","马","n.","We talked about the horse."],
+["hospital","医院","n.","I saw a hospital today."],
+["hot","热的","adj.","That is so hot."],
+["hour","小时","n.","The hour was beautiful."],
+["house","房子","n.","We talked about the house."],
+["how","怎样，如何","adv.","She answered how."],
+["hungry","饥饿的","adj.","What a hungry day."],
+["hurry","赶快","v.","I like to hurry every day."],
+["hurt","（使）疼痛","v.","I like to hurt every day."],
+["I","我","pron.","I is my best friend."],
+["ice cream","冰淇淋","n.","We talked about the ice cream."],
+["idea","主意，想法","n.","We talked about the idea."],
+["ill","生病的","adj.","That is so ill."],
+["in","在……里","prep.","The book is in the desk."],
+["interesting","有趣的","adj.","What a interesting day."],
+["Internet","互联网","n.","The Internet was beautiful."],
+["it","它","pron.","it is my best friend."],
+["its","它的","pron.","its is my best friend."],
+["job","工作","n.","I saw a job today."],
+["juice","果汁","n.","I saw a juice today."],
+["jump","跳","v.","Let us jump together."],
+["keep","保持","v.","I like to keep every day."],
+["kid","小孩","n.","The kid was beautiful."],
+["kind","种类","n.","We talked about the kind."],
+["kitchen","厨房","n.","We talked about the kitchen."],
+["kite","风筝","n.","We talked about the kite."],
+["know","知道，了解","v.","She learned to know quickly."],
+["lake","湖","n.","The lake was beautiful."],
+["last","最后的","adj.","That is so last."],
+["late","晚的","adj.","What a late day."],
+["learn","学习","v.","I like to learn every day."],
+["leg","腿","n.","I saw a leg today."],
+["lesson","课，教训","n.","The lesson was beautiful."],
+["let","让","v.","She learned to let quickly."],
+["letter","信","n.","The letter was beautiful."],
+["library","图书馆","n.","The library was beautiful."],
+["light","光","n.","We talked about the light."],
+["like","喜欢","v.","Let us like together."],
+["lion","狮子","n.","I saw a lion today."],
+["listen","听","v.","I like to listen every day."],
+["little","小的","adj.","I feel little today."],
+["live","居住","v.","She learned to live quickly."],
+["long","长的","adj.","What a long day."],
+["look","看","v.","I like to look every day."],
+["lot","大量","n.","I saw a lot today."],
+["love","爱","v.","Let us love together."],
+["lovely","可爱的，令人愉快的","adj.","What a lovely day."],
+["lunch","午餐","n.","We talked about the lunch."],
+["make","做，制造","v.","She learned to make quickly."],
+["many","许多的","adj.","That is so many."],
+["map","地图","n.","The map was beautiful."],
+["may","可以","modal v.","We may start now."],
+["me","我（宾格）","pron.","me is my best friend."],
+["meat","肉","n.","The meat was beautiful."],
+["meet","遇见","v.","She learned to meet quickly."],
+["middle","中间的","n.","The middle was beautiful."],
+["milk","牛奶","n.","We talked about the milk."],
+["minute","分钟","n.","The minute was beautiful."],
+["Miss","小姐","n.","The Miss was beautiful."],
+["money","钱","n.","We talked about the money."],
+["monkey","猴子","n.","I saw a monkey today."],
+["month","月","n.","I saw a month today."],
+["moon","月亮","n.","We talked about the moon."],
+["morning","早晨，上午","n.","The morning was beautiful."],
+["mouth","嘴","n.","I saw a mouth today."],
+["move","移动","v.","Let us move together."],
+["Mr","先生","n.","The Mr was beautiful."],
+["Mrs","夫人，太太","n.","I saw a Mrs today."],
+["Ms","女士","n.","I saw a Ms today."],
+["much","许多的","adj.","That is so much."],
+["music","音乐","n.","We talked about the music."],
+["must","必须","modal v.","He must do it."],
+["my","我的","pron.","my is my best friend."],
+["name","名字","n.","We talked about the name."],
+["near","附近的","prep.","Sit near the window."],
+["never","从不","adv.","She answered never."],
+["new","新的","adj.","I feel new today."],
+["next","下一个","adj.","What a next day."],
+["nice","好的","adj.","That is so nice."],
+["night","夜晚","n.","I saw a night today."],
+["no","不","adv.","They nodded no."],
+["noodle","面条","n.","The noodle was beautiful."],
+["nose","鼻子","n.","I saw a nose today."],
+["not","不","adv.","He ran not to catch up."],
+["now","现在","adv.","She answered now."],
+["nurse","护士","n.","The nurse was beautiful."],
+["o'clock","……点钟","adv.","He ran o'clock to catch up."],
+["of","……的","prep.","Sit of the window."],
+["off","离开","adv.","She answered off."],
+["often","经常","adv.","They nodded often."],
+["OK","好的","interj.","OK! Look there."],
+["old","老的","adj.","I feel old today."],
+["on","在……上面","prep.","She walked on the room."],
+["open","开着的","adj.","What a open day."],
+["or","或者","conj.","Wait or I return."],
+["orange","橙子","n.","The orange was beautiful."],
+["our","我们的","pron.","our are very kind."],
+["out","在外面","adv.","He ran out to catch up."],
+["over","在……上方","prep.","She walked over the room."],
+["pair","一双，一对","n.","The pair was beautiful."],
+["panda","熊猫","n.","The panda was beautiful."],
+["paper","纸","n.","We talked about the paper."],
+["parent","父（母）亲","n.","We talked about the parent."],
+["park","公园","n.","The park was beautiful."],
+["party","聚会","n.","We talked about the party."],
+["pen","钢笔","n.","The pen was beautiful."],
+["pencil","铅笔","n.","The pencil was beautiful."],
+["people","人，人们","n.","I saw a people today."],
+["pet","宠物","n.","I saw a pet today."],
+["phone","电话","n.","The phone was beautiful."],
+["piano","钢琴","n.","The piano was beautiful."],
+["picture","图画","n.","The picture was beautiful."],
+["pig","猪","n.","The pig was beautiful."],
+["ping-pong","乒乓球","n.","I saw a ping-pong today."],
+["pink","粉色的","adj.","I feel pink today."],
+["place","地方","n.","We talked about the place."],
+["plane","飞机","n.","We talked about the plane."],
+["plant","植物","n.","I saw a plant today."],
+["play","玩","v.","I like to play every day."],
+["playground","操场","n.","We talked about the playground."],
+["please","请","interj.","please! Look there."],
+["police","警察","n.","I saw a police today."],
+["potato","土豆","n.","The potato was beautiful."],
+["put","放","v.","She learned to put quickly."],
+["question","问题","n.","I saw a question today."],
+["quiet","安静的","adj.","That is so quiet."],
+["rabbit","兔子","n.","The rabbit was beautiful."],
+["rain","雨","n.","I saw a rain today."],
+["read","读，阅读","v.","Let us read together."],
+["red","红色的","adj.","What a red day."],
+["rice","米饭","n.","We talked about the rice."],
+["right","正确的","adj.","I feel right today."],
+["river","河","n.","We talked about the river."],
+["robot","机器人","n.","The robot was beautiful."],
+["room","房间","n.","I saw a room today."],
+["ruler","尺子","n.","The ruler was beautiful."],
+["run","跑","v.","Let us run together."],
+["sad","伤心的","adj.","What a sad day."],
+["safe","安全的","adj.","That is so safe."],
+["say","说","v.","She learned to say quickly."],
+["school","学校","n.","We talked about the school."],
+["schoolbag","书包","n.","The schoolbag was beautiful."],
+["science","科学","n.","We talked about the science."],
+["sea","海","n.","The sea was beautiful."],
+["season","季节","n.","I saw a season today."],
+["see","看见","v.","She learned to see quickly."],
+["sell","卖","v.","I like to sell every day."],
+["share","分享","v.","She learned to share quickly."],
+["she","她","pron.","I told she the news."],
+["sheep","绵羊","n.","I saw a sheep today."],
+["ship","轮船","n.","We talked about the ship."],
+["shirt","（男式）衬衫","n.","The shirt was beautiful."],
+["shoe","鞋","n.","We talked about the shoe."],
+["shop","商店","n.","We talked about the shop."],
+["short","短的","adj.","What a short day."],
+["shorts","短裤","n.","We talked about the shorts."],
+["should","应该","modal v.","You should try this."],
+["show","展示","v.","She learned to show quickly."],
+["sing","唱","v.","Let us sing together."],
+["sister","姐，妹","n.","We talked about the sister."],
+["sit","坐","v.","Let us sit together."],
+["skirt","裙子","n.","I saw a skirt today."],
+["sleep","睡觉","v.","She learned to sleep quickly."],
+["slow","慢的","adj.","What a slow day."],
+["small","小的","adj.","That is so small."],
+["snow","雪","n.","I saw a snow today."],
+["so","如此","adv.","He ran so to catch up."],
+["sock","短袜","n.","We talked about the sock."],
+["some","一些","adj.","I feel some today."],
+["sometimes","有时","adv.","She answered sometimes."],
+["song","歌曲","n.","We talked about the song."],
+["sorry","抱歉的","adj.","That is so sorry."],
+["soup","汤","n.","We talked about the soup."],
+["space","太空","n.","I saw a space today."],
+["speak","说（某种语言）","v.","Let us speak together."],
+["sport","运动","n.","I saw a sport today."],
+["spring","春天","n.","I saw a spring today."],
+["stand","站","v.","Let us stand together."],
+["star","星星","n.","We talked about the star."],
+["stop","停止","v.","I like to stop every day."],
+["story","故事","n.","I saw a story today."],
+["street","街道","n.","We talked about the street."],
+["strong","强壮的","adj.","I feel strong today."],
+["student","学生","n.","We talked about the student."],
+["study","学习","v.","Let us study together."],
+["subject","学科","n.","We talked about the subject."],
+["summer","夏天","n.","We talked about the summer."],
+["sun","太阳","n.","We talked about the sun."],
+["sunny","阳光充足的","adj.","What a sunny day."],
+["supermarket","超市","n.","The supermarket was beautiful."],
+["sure","确信的","adj.","What a sure day."],
+["sweater","毛衣","n.","The sweater was beautiful."],
+["sweep","打扫","v.","She learned to sweep quickly."],
+["swim","游泳","v.","Let us swim together."],
+["table","桌子","n.","I saw a table today."],
+["tail","尾巴","n.","We talked about the tail."],
+["take","拿，取","v.","She learned to take quickly."],
+["talk","谈话","v.","Let us talk together."],
+["tall","高的","adj.","I feel tall today."],
+["taxi","出租车","n.","I saw a taxi today."],
+["tea","茶","n.","We talked about the tea."],
+["teacher","老师","n.","We talked about the teacher."],
+["tell","告诉","v.","She learned to tell quickly."],
+["thank","感谢","v.","She learned to thank quickly."],
+["that","那个","adj.","I feel that today."],
+["the","这（那）个","art.","the apple is healthy."],
+["their","他/她/它们的","pron.","I told their the news."],
+["them","他/她/它们（宾格）","pron.","I told them the news."],
+["then","那时","adv.","He ran then to catch up."],
+["there","在那里","adv.","They nodded there."],
+["these","这些","adj.","I feel these today."],
+["they","他/她/它们","pron.","they are very kind."],
+["thin","薄的","adj.","That is so thin."],
+["think","想，认为","v.","She learned to think quickly."],
+["this","这个","adj.","What a this day."],
+["those","那些","adj.","What a those day."],
+["tidy","整洁的","adj.","I feel tidy today."],
+["tiger","老虎","n.","We talked about the tiger."],
+["time","时间","n.","I saw a time today."],
+["tired","疲劳的","adj.","What a tired day."],
+["to","向，到","prep.","Sit to the window."],
+["today","今天","n.","I saw a today today."],
+["toilet","厕所","n.","I saw a toilet today."],
+["tomato","西红柿","n.","I saw a tomato today."],
+["tomorrow","明天","n.","We talked about the tomorrow."],
+["too","也","adv.","They nodded too."],
+["top","顶部","n.","I saw a top today."],
+["toy","玩具","n.","The toy was beautiful."],
+["train","火车","n.","I saw a train today."],
+["travel","旅行","v.","Let us travel together."],
+["tree","树","n.","We talked about the tree."],
+["trousers","裤子","n.","The trousers was beautiful."],
+["try","尝试","v.","I like to try every day."],
+["turn","转动","v.","I like to turn every day."],
+["umbrella","伞","n.","We talked about the umbrella."],
+["uncle","叔父","n.","I saw a uncle today."],
+["under","在……下面","prep.","She walked under the room."],
+["up","向上","adv.","She answered up."],
+["us","我们（宾格）","pron.","us are very kind."],
+["use","用途","n.","The use was beautiful."],
+["vegetable","蔬菜","n.","The vegetable was beautiful."],
+["very","非常","adv.","She answered very."],
+["visit","参观","v.","She learned to visit quickly."],
+["wait","等待","v.","Let us wait together."],
+["wake","醒来","v.","She learned to wake quickly."],
+["walk","走路","v.","Let us walk together."],
+["wall","墙","n.","I saw a wall today."],
+["want","想要","v.","I like to want every day."],
+["warm","温暖的","adj.","I feel warm today."],
+["wash","洗","v.","I like to wash every day."],
+["watch","观看","v.","She learned to watch quickly."],
+["water","水","n.","I saw a water today."],
+["way","路","n.","We talked about the way."],
+["we","我们","pron.","I told we the news."],
+["wear","穿，戴","v.","She learned to wear quickly."],
+["weather","天气","n.","We talked about the weather."],
+["week","周，星期","n.","The week was beautiful."],
+["welcome",",","interj.","welcome! Look there."],
+["well","好地","adv.","He ran well to catch up."],
+["what","什么","pron.","what is my best friend."],
+["when","什么时候","adv.","She answered when."],
+["where","在哪里","adv.","He ran where to catch up."],
+["which","哪一个","adj.","What a which day."],
+["white","白色的","adj.","I feel white today."],
+["who","谁","pron.","who is my best friend."],
+["whose","谁的","pron.","whose are very kind."],
+["why","为什么","adv.","They nodded why."],
+["will","将，会","modal v.","He will do it."],
+["win","赢，获胜","v.","She learned to win quickly."],
+["window","窗户","n.","We talked about the window."],
+["windy","多风的","adj.","What a windy day."],
+["winter","冬天","n.","I saw a winter today."],
+["wish","希望","v.","She learned to wish quickly."],
+["with","和……一起","prep.","She walked with the room."],
+["wonderful","极好的","adj.","I feel wonderful today."],
+["word","词，单词","n.","We talked about the word."],
+["work","工作","v.","Let us work together."],
+["worker","工人","n.","I saw a worker today."],
+["world","世界","n.","We talked about the world."],
+["worry","担心","v.","She learned to worry quickly."],
+["write","写","v.","Let us write together."],
+["wrong","错误的","adj.","That is so wrong."],
+["year","年","n.","I saw a year today."],
+["yellow","黄色的","adj.","That is so yellow."],
+["yes","是，是的","adv.","They nodded yes."],
+["yesterday","昨天","n.","The yesterday was beautiful."],
+["you","你","pron.","you is my best friend."],
+["young","年轻的","adj.","I feel young today."],
+["your","你的","pron.","your is my best friend."],
+["zoo","动物园","n.","The zoo was beautiful."],
+],
+middle:[
+["ability","能力","n.","She has the ability to solve complex problems."],
+["above","在……上面","prep.","The bird flew above the trees."],
+["abroad","在国外","adv.","She dreams of studying abroad."],
+["absent","缺席的","adj.","He was absent from school yesterday."],
+["accept","接受","v.","Please accept my apology."],
+["accident","事故","n.","There was a car accident on the highway."],
+["achieve","实现","v.","Work hard to achieve your goals."],
+["act","行动","v.","You need to act quickly."],
+["active","活跃的","adj.","She stays active by running every day."],
+["activity","活动","n.","Swimming is my favorite activity."],
+["actually","实际上","adv.","Actually, I disagree with that."],
+["add","增加","v.","Please add some sugar to the tea."],
+["address","地址","n.","What is your email address?"],
+["admire","钦佩","v.","I admire her courage."],
+["advantage","优势","n.","Being tall is an advantage in basketball."],
+["advice","建议","n.","She gave me good advice."],
+["afraid","害怕的","adj.","I am afraid of the dark."],
+["against","反对","prep.","They voted against the proposal."],
+["agree","同意","v.","I agree with your opinion."],
+["allow","允许","v.","Please allow me to explain."],
+["almost","几乎","adv.","I almost missed the bus."],
+["alone","独自的","adj.","She prefers to work alone."],
+["already","已经","adv.","I have already finished my homework."],
+["although","虽然","conj.","Although it rained, we still went out."],
+["among","在……之中","prep.","He sat among his friends."],
+["ancient","古代的","adj.","They visited ancient ruins."],
+["appear","出现","v.","A rainbow appeared in the sky."],
+["area","地区","n.","This area is known for its beauty."],
+["argue","争论","v.","They often argue about small things."],
+["army","军队","n.","He joined the army after graduation."],
+["arrive","到达","v.","We will arrive at noon."],
+["article","文章","n.","I read an interesting article today."],
+["artist","艺术家","n.","She is a talented artist."],
+["attend","参加","v.","All students must attend the meeting."],
+["attention","注意力","n.","Please pay attention to the teacher."],
+["avoid","避免","v.","Try to avoid making the same mistake."],
+["basic","基本的","adj.","This is a basic requirement."],
+["battle","战斗","n.","They won the battle."],
+["beauty","美丽","n.","The beauty of nature amazed us."],
+["believe","相信","v.","I believe in your ability."],
+["belong","属于","v.","This book belongs to me."],
+["benefit","益处","n.","Exercise has many health benefits."],
+["besides","除……之外","prep.","Besides English, she speaks French."],
+["beyond","超出","prep.","The view is beyond description."],
+["birth","出生","n.","What is your date of birth?"],
+["bitter","苦的","adj.","The medicine tastes bitter."],
+["blind","盲的","adj.","He has been blind since birth."],
+["blood","血液","n.","Blood is red."],
+["board","木板","n.","Write your name on the board."],
+["bother","打扰","v.","Don't bother me when I'm working."],
+["bottom","底部","n.","The keys are at the bottom of the bag."],
+["brain","大脑","n.","The human brain is very complex."],
+["brave","勇敢的","adj.","She was brave enough to speak up."],
+["breath","呼吸","n.","Take a deep breath and relax."],
+["bright","明亮的","adj.","The room is bright and sunny."],
+["burn","燃烧","v.","Paper burns easily."],
+["calm","平静的","adj.","The sea looks calm today."],
+["capital","首都","n.","Beijing is the capital of China."],
+["career","职业","n.","She chose teaching as her career."],
+["careful","小心的","adj.","Be careful when crossing the road."],
+["cause","原因","n.","What was the cause of the accident?"],
+["celebrate","庆祝","v.","Let us celebrate your success."],
+["central","中心的","adj.","The hotel is in a central location."],
+["century","世纪","n.","This building is over a century old."],
+["certain","确定的","adj.","I am certain that he will come."],
+["challenge","挑战","n.","This task is a real challenge."],
+["chance","机会","n.","Everyone deserves a second chance."],
+["character","性格","n.","She has a strong character."],
+["charge","收费","v.","How much do you charge for this?"],
+["cheat","欺骗","v.","It is wrong to cheat on exams."],
+["check","检查","v.","Please check your answers carefully."],
+["choice","选择","n.","You have no other choice."],
+["circle","圆圈","n.","Draw a circle on the paper."],
+["citizen","公民","n.","He is a citizen of China."],
+["climate","气候","n.","The climate here is very mild."],
+["closely","紧密地","adv.","Watch the baby closely."],
+["collect","收集","v.","I like to collect stamps."],
+["college","大学","n.","She is studying at a college."],
+["combine","结合","v.","Combine the flour and sugar."],
+["comfortable","舒适的","adj.","This chair is very comfortable."],
+["common","常见的","adj.","This is a common mistake."],
+["communicate","交流","v.","We communicate by email."],
+["community","社区","n.","Our community is very friendly."],
+["compare","比较","v.","Compare the two pictures."],
+["competition","比赛","n.","She won the competition."],
+["complain","抱怨","v.","Don't complain about everything."],
+["complete","完成","v.","Please complete the form."],
+["condition","条件","n.","The car is in good condition."],
+["connect","连接","v.","Connect the printer to the computer."],
+["consider","考虑","v.","Please consider my suggestion."],
+["continue","继续","v.","Let us continue our discussion."],
+["control","控制","v.","You need to control your temper."],
+["conversation","对话","n.","We had a long conversation."],
+["correct","正确的","adj.","Your answer is correct."],
+["cost","花费","v.","How much does this cost?"],
+["courage","勇气","n.","She showed great courage."],
+["create","创造","v.","Artists create beautiful things."],
+["culture","文化","n.","Chinese culture is very rich."],
+["curious","好奇的","adj.","I am curious about the result."],
+["customer","顾客","n.","The customer is always right."],
+["danger","危险","n.","There is danger ahead."],
+["daughter","女儿","n.","My daughter is eight years old."],
+["dead","死的","adj.","The flowers are dead."],
+["death","死亡","n.","The news of his death shocked us."],
+["debate","辩论","n.","They had a heated debate."],
+["decide","决定","v.","I need to decide soon."],
+["decision","决定","n.","Making a decision is difficult."],
+["deeply","深深地","adv.","I am deeply grateful."],
+["defeat","击败","v.","They defeated the enemy."],
+["defend","保卫","v.","We must defend our rights."],
+["degree","学位","n.","She has a degree in biology."],
+["depend","依赖","v.","Children depend on their parents."],
+["describe","描述","v.","Can you describe the scene?"],
+["design","设计","v.","She designs beautiful clothes."],
+["desire","渴望","n.","She has a strong desire to learn."],
+["destroy","毁坏","v.","The fire destroyed the building."],
+["develop","发展","v.","The city is developing rapidly."],
+["dialogue","对话","n.","The dialogue in the film is witty."],
+["difference","区别","n.","What is the difference between them?"],
+["difficulty","困难","n.","She overcame many difficulties."],
+["direct","直接的","adj.","Give me a direct answer."],
+["disappear","消失","v.","The sun disappeared behind clouds."],
+["discover","发现","v.","Scientists discover new things."],
+["discuss","讨论","v.","Let us discuss this problem."],
+["disease","疾病","n.","He suffers from a rare disease."],
+["distance","距离","n.","The distance is about ten miles."],
+["divide","分开","v.","Divide the cake into six pieces."],
+["donate","捐赠","v.","Please donate to charity."],
+["doubt","怀疑","v.","I doubt his honesty."],
+["downtown","市中心","n.","Let us go downtown tonight."],
+["dragon","龙","n.","The dragon is a mythical creature."],
+["dream","梦想","n.","I had a strange dream last night."],
+["drop","掉落","v.","Be careful not to drop the glass."],
+["duty","责任","n.","It is your duty to help."],
+["earthquake","地震","n.","The earthquake destroyed many houses."],
+["education","教育","n.","Education is very important."],
+["effect","效果","n.","The medicine had no effect."],
+["effort","努力","n.","Thank you for your effort."],
+["electric","电的","adj.","We need an electric fan."],
+["employ","雇佣","v.","The company employs 500 workers."],
+["encourage","鼓励","v.","Parents should encourage their children."],
+["enemy","敌人","n.","He made many enemies."],
+["energy","能量","n.","I have no energy left."],
+["engineer","工程师","n.","He works as an engineer."],
+["environment","环境","n.","We must protect the environment."],
+["especially","尤其","adv.","I love fruit, especially apples."],
+["event","事件","n.","This is a historic event."],
+["exactly","确切地","adv.","That is exactly what I mean."],
+["examination","考试","n.","The examination was difficult."],
+["example","例子","n.","Give me an example."],
+["excellent","优秀的","adj.","That is an excellent idea."],
+["except","除……之外","prep.","Everyone came except Tom."],
+["exchange","交换","v.","Let us exchange gifts."],
+["excite","使兴奋","v.","The news excited everyone."],
+["exercise","锻炼","n.","Exercise is good for health."],
+["exist","存在","v.","Do ghosts really exist?"],
+["expect","期望","v.","I expect you to succeed."],
+["experience","经验","n.","She has much experience."],
+["experiment","实验","n.","The experiment was successful."],
+["explain","解释","v.","Can you explain this to me?"],
+["express","表达","v.","Express your feelings freely."]
+],
+high:[
+["abandon","放弃","v.","Never abandon your dreams."],
+["absorb","吸收","v.","Plants absorb sunlight."],
+["abstract","抽象的","adj.","The concept is too abstract."],
+["abundant","丰富的","adj.","The region has abundant resources."],
+["access","进入","n.","You need a password for access."],
+["accompany","陪伴","v.","I will accompany you home."],
+["accumulate","积累","v.","Wealth accumulates over time."],
+["accurate","准确的","adj.","The data is accurate."],
+["acknowledge","承认","v.","She acknowledged her mistake."],
+["acquire","获得","v.","He acquired a new skill."],
+["adapt","适应","v.","Animals adapt to their environment."],
+["adequate","足够的","adj.","The supply is adequate."],
+["adjust","调整","v.","Please adjust the volume."],
+["administration","管理","n.","She works in administration."],
+["adolescent","青少年","n.","Adolescents need guidance."],
+["adopt","采纳","v.","We should adopt this method."],
+["advocate","提倡","v.","They advocate for change."],
+["affair","事务","n.","This is a private affair."],
+["agency","机构","n.","She works at a travel agency."],
+["aggressive","侵略性的","adj.","He has an aggressive attitude."]
+],
+postgrad:[
+["abolish","废除","v.","They want to abolish the old law."],
+["absurd","荒谬的","adj.","That is an absurd idea."],
+["abuse","滥用","v.","Don't abuse your power."],
+["academic","学术的","adj.","She has an academic background."],
+["accelerate","加速","v.","The car accelerated quickly."],
+["accommodate","容纳","v.","The hall can accommodate 500 people."],
+["accordance","一致","n.","We act in accordance with the law."],
+["accountable","有责任的","adj.","You are accountable for this."],
+["acute","严重的","adj.","The problem is acute."],
+["address","处理","v.","We must address this issue."],
+["adhere","遵守","v.","Please adhere to the rules."],
+["adjacent","邻近的","adj.","They live in adjacent rooms."],
+["administer","管理","v.","She administers the department."],
+["adverse","不利的","adj.","The decision had adverse effects."],
+["allocate","分配","v.","Funds were allocated to the project."],
+["ambiguous","模糊的","adj.","The message was ambiguous."],
+["amend","修改","v.","The law needs to be amended."],
+["analogy","类比","n.","Let me draw an analogy."],
+["anonymous","匿名的","adj.","The letter was anonymous."],
+["apparatus","装置","n.","The laboratory has new apparatus."]
+],
+ielts:[
+["accommodation","住宿","n.","We need to find accommodation."],
+["accordingly","相应地","adv.","Plan accordingly."],
+["accountant","会计","n.","She works as an accountant."],
+["accuracy","准确性","n.","Check the accuracy of the data."],
+["acknowledgement","承认","n.","He nodded in acknowledgement."],
+["acquisition","获得","n.","Language acquisition takes time."],
+["adjacent","邻近的","adj.","The two buildings are adjacent."],
+["adjustment","调整","n.","Some adjustments are needed."],
+["administration","管理","n.","Business administration is her major."],
+["advocate","倡导者","n.","He is an advocate of free speech."],
+["aggregate","总计","n.","The aggregate of all scores."],
+["allocate","分配","v.","Resources must be allocated fairly."],
+["alternative","替代的","adj.","We need an alternative solution."],
+["ambiguous","模糊的","adj.","The instructions were ambiguous."],
+["amend","修改","v.","The document has been amended."],
+["analogy","类比","n.","This is a useful analogy."],
+["analyse","分析","v.","We need to analyse the results."],
+["annual","每年的","adj.","The annual meeting is tomorrow."],
+["anticipate","预料","v.","We anticipate good results."],
+["apparent","明显的","adj.","The reason is apparent."]
+]
+};
+
+// ============ GRAMMAR PATTERNS ============
+var PATTERNS={
+n:[
+{en:"The {WORD} caught everyone's attention immediately.",zh:"那个{WORD}立刻吸引了所有人的注意。",struct:"S+V+O · 主谓宾结构",g:'<span class=\"gr sbj\">S(主): The {WORD}</span> · <span class=\"gr vb\">V(谓): caught</span> · <span class=\"gr obj\">O(宾): attention</span> · <span class=\"gr adv\">Adv(状): immediately</span>'},
+{en:"I could not take my eyes off the {WORD} in front of me.",zh:"我无法将目光从眼前的{WORD}上移开。",struct:"S+V+O · 主谓宾+介词短语",g:'<span class=\"gr sbj\">S(主): I</span> · <span class=\"gr vb\">V(谓): could not take my eyes off</span> · <span class=\"gr obj\">O(宾): the {WORD}</span> · <span class=\"gr adv\">Adv(状): in front of me</span>'},
+{en:"Nothing could compare to the {WORD} I discovered that day.",zh:"没有什么能比得上那天我发现的{WORD}。",struct:"S+V+Prep · 主谓宾+定语从句",g:'<span class=\"gr sbj\">S(主): Nothing</span> · <span class=\"gr vb\">V(谓): could compare to</span> · <span class=\"gr obj\">O(宾): the {WORD}</span> · <span class=\"gr adv\">定语从句: I discovered that day</span>'},
+{en:"The {WORD} turned out to be far more fascinating than I expected.",zh:"这个{WORD}比我想象的要迷人得多。",struct:"S+V+C · 主系表+比较状语",g:'<span class=\"gr sbj\">S(主): The {WORD}</span> · <span class=\"gr vb\">V(系): turned out to be</span> · <span class=\"gr obj\">C(表): fascinating</span> · <span class=\"gr adv\">Adv(状): than I expected</span>'},
+{en:"Everyone was talking about the {WORD} with great excitement.",zh:"每个人都在兴奋地谈论那个{WORD}。",struct:"S+V+O · 主谓宾+方式状语",g:'<span class=\"gr sbj\">S(主): Everyone</span> · <span class=\"gr vb\">V(谓): was talking about</span> · <span class=\"gr obj\">O(宾): the {WORD}</span> · <span class=\"gr adv\">Adv(状): with great excitement</span>'},
+{en:"The {WORD} stood out from everything else in the room.",zh:"那个{WORD}在房间里的一切中脱颖而出。",struct:"S+Vi+Adv · 主谓+介词短语",g:'<span class=\"gr sbj\">S(主): The {WORD}</span> · <span class=\"gr vb\">V(谓): stood out</span> · <span class=\"gr adv\">Adv(状): from everything else</span>'},
+{en:"A sense of wonder surrounded the {WORD} like a magical aura.",zh:"一种惊奇感像魔法光环一样围绕着那个{WORD}。",struct:"S+V+O · 主谓宾+比喻状语",g:'<span class=\"gr sbj\">S(主): A sense of wonder</span> · <span class=\"gr vb\">V(谓): surrounded</span> · <span class=\"gr obj\">O(宾): the {WORD}</span> · <span class=\"gr adv\">Adv(状): like a magical aura</span>'},
+{en:"The {WORD} was the most impressive sight I had ever seen.",zh:"那个{WORD}是我见过的最令人印象深刻的景象。",struct:"S+V+C · 主系表+定语从句",g:'<span class=\"gr sbj\">S(主): The {WORD}</span> · <span class=\"gr vb\">V(系): was</span> · <span class=\"gr obj\">C(表): the most impressive sight</span> · <span class=\"gr adv\">定语从句: I had ever seen</span>'},
+{en:"We talked about the {WORD} for hours without getting tired.",zh:"我们谈论那个{WORD}好几个小时都不觉得累。",struct:"S+V+O · 主谓宾+时间状语",g:'<span class=\"gr sbj\">S(主): We</span> · <span class=\"gr vb\">V(谓): talked about</span> · <span class=\"gr obj\">O(宾): the {WORD}</span> · <span class=\"gr adv\">Adv(状): for hours without getting tired</span>'}
+],
+v:[
+{en:"She learned to {WORD} in a way that surprised everyone.",zh:"她学会以一种让所有人都惊讶的方式去{WORD}。",struct:"S+V+O · 主谓宾+方式状语",g:'<span class=\"gr sbj\">S(主): She</span> · <span class=\"gr vb\">V(谓): learned to {WORD}</span> · <span class=\"gr adv\">Adv(状): in a way that surprised everyone</span>'},
+{en:"I decided to {WORD} before the opportunity slipped away.",zh:"我决定在机会溜走之前去{WORD}。",struct:"S+V+O · 主谓宾+时间状语",g:'<span class=\"gr sbj\">S(主): I</span> · <span class=\"gr vb\">V(谓): decided to {WORD}</span> · <span class=\"gr adv\">Adv(状): before the opportunity slipped away</span>'},
+{en:"If you truly want to grow, you must learn to {WORD} with patience.",zh:"如果你真的想要成长，你必须学会耐心地{WORD}。",struct:"条件句+情态动词 · If引导+must+V",g:'<span class=\"gr adv\">条件从句: If you truly want to grow</span> · <span class=\"gr sbj\">S(主): you</span> · <span class=\"gr vb\">V(谓): must learn to {WORD}</span> · <span class=\"gr adv\">Adv(状): with patience</span>'},
+{en:"It took courage to {WORD} in front of so many people.",zh:"在那么多人面前{WORD}需要勇气。",struct:"形式主语句 · It takes+N+to do",g:'<span class=\"gr obj\">形式主语: It</span> · <span class=\"gr vb\">V(谓): took</span> · <span class=\"gr obj\">O(宾): courage to {WORD}</span> · <span class=\"gr adv\">Adv(状): in front of so many people</span>'},
+{en:"They chose to {WORD} together, strengthening their bond.",zh:"他们选择一起{WORD}，加深了彼此的联结。",struct:"S+V+O · 主谓宾+分词状语",g:'<span class=\"gr sbj\">S(主): They</span> · <span class=\"gr vb\">V(谓): chose to {WORD}</span> · <span class=\"gr adv\">分词状语: strengthening their bond</span>'},
+{en:"She could {WORD} with a grace that left everyone speechless.",zh:"她{WORD}时那种优雅让所有人都说不出话来。",struct:"S+V+O · 主谓宾+定语从句",g:'<span class=\"gr sbj\">S(主): She</span> · <span class=\"gr vb\">V(谓): could {WORD}</span> · <span class=\"gr adv\">Adv(状): with a grace</span> · <span class=\"gr adv\">定语从句: that left everyone speechless</span>'},
+{en:"I wanted to {WORD} the moment I saw what was happening.",zh:"我一看到发生了什么就想{WORD}。",struct:"S+V+O · 主谓宾+时间状语",g:'<span class=\"gr sbj\">S(主): I</span> · <span class=\"gr vb\">V(谓): wanted to {WORD}</span> · <span class=\"gr adv\">Adv(状): the moment I saw what was happening</span>'},
+{en:"He finally gathered the courage to {WORD} out loud.",zh:"他终于鼓起勇气大声地{WORD}了出来。",struct:"S+V+O · 主谓宾+方式状语",g:'<span class=\"gr sbj\">S(主): He</span> · <span class=\"gr vb\">V(谓): gathered the courage to {WORD}</span> · <span class=\"gr adv\">Adv(状): out loud</span>'},
+{en:"We must {WORD} now or it will be too late forever.",zh:"我们必须现在就{WORD}，否则就永远来不及了。",struct:"并列句 · 祈使+or+结果",g:'<span class=\"gr sbj\">S(主): We</span> · <span class=\"gr vb\">V(谓): must {WORD}</span> · <span class=\"gr adv\">Adv(状): now</span> · <span class=\"gr adv\">并列结果: or it will be too late</span>'}
+],
+adj:[
+{en:"It was the most {WORD} experience I have ever had.",zh:"那是我所经历过的最{WORD}的经历。",struct:"S+V+C · 主系表+定语从句",g:'<span class=\"gr sbj\">S(主): It</span> · <span class=\"gr vb\">V(系): was</span> · <span class=\"gr obj\">C(表): the most {WORD} experience</span> · <span class=\"gr adv\">定语从句: I have ever had</span>'},
+{en:"Everything felt so {WORD} that I could hardly believe it was real.",zh:"一切都感觉如此{WORD}，我几乎不敢相信这是真的。",struct:"S+V+C · 主系表+结果状语",g:'<span class=\"gr sbj\">S(主): Everything</span> · <span class=\"gr vb\">V(系): felt</span> · <span class=\"gr obj\">C(表): so {WORD}</span> · <span class=\"gr adv\">结果状语: that I could hardly believe it was real</span>'},
+{en:"What a {WORD} day it turned out to be.",zh:"结果这是多么{WORD}的一天啊。",struct:"感叹句 · What+a+adj+名词",g:'<span class=\"gr obj\">感叹词: What</span> · <span class=\"gr sbj\">S(主): a {WORD} day</span> · <span class=\"gr vb\">V(谓): it turned out to be</span>'},
+{en:"I felt deeply {WORD} as I walked through the quiet streets.",zh:"当我走过安静的街道时，我感到深深的{WORD}。",struct:"S+V+C · 主系表+时间状语",g:'<span class=\"gr sbj\">S(主): I</span> · <span class=\"gr vb\">V(系): felt</span> · <span class=\"gr obj\">C(表): deeply {WORD}</span> · <span class=\"gr adv\">Adv(状): as I walked through the quiet streets</span>'},
+{en:"The {WORD} look in her eyes told me everything I needed to know.",zh:"她眼中{WORD}的神情告诉我我需要知道的一切。",struct:"S+V+O · 主谓宾+定语从句",g:'<span class=\"gr sbj\">S(主): The {WORD} look in her eyes</span> · <span class=\"gr vb\">V(谓): told</span> · <span class=\"gr obj\">O(宾): me everything</span> · <span class=\"gr adv\">定语从句: I needed to know</span>'},
+{en:"That was simply {WORD}, beyond any words I could find.",zh:"那简直是{WORD}的，找不到任何词语来形容。",struct:"S+V+C · 主系表+分词状语",g:'<span class=\"gr sbj\">S(主): That</span> · <span class=\"gr vb\">V(系): was</span> · <span class=\"gr obj\">C(表): simply {WORD}</span> · <span class=\"gr adv\">分词状语: beyond any words</span>'},
+{en:"A(n) {WORD} atmosphere filled the entire place.",zh:"一种{WORD}的氛围充满了整个地方。",struct:"S+V+O · 主谓宾",g:'<span class=\"gr sbj\">S(主): A(n) {WORD} atmosphere</span> · <span class=\"gr vb\">V(谓): filled</span> · <span class=\"gr obj\">O(宾): the entire place</span>'},
+{en:"Never had I seen anything so strange and {WORD} before.",zh:"我从未见过如此奇特而{WORD}的东西。",struct:"倒装句 · Never+had+S+V",g:'<span class=\"gr adv\">否定状语: Never</span> · <span class=\"gr vb\">V(助): had</span> · <span class=\"gr sbj\">S(主): I</span> · <span class=\"gr vb\">V(谓): seen</span> · <span class=\"gr obj\">O(宾): anything so strange and {WORD}</span>'},
+{en:"She gave me a(n) {WORD} smile that warmed my heart instantly.",zh:"她给了我一个{WORD}的微笑，瞬间温暖了我的心。",struct:"S+V+O · 主谓双宾+定语从句",g:'<span class=\"gr sbj\">S(主): She</span> · <span class=\"gr vb\">V(谓): gave</span> · <span class=\"gr obj\">O(间): me</span> · <span class=\"gr obj\">O(直): a(n) {WORD} smile</span> · <span class=\"gr adv\">定语从句: that warmed my heart</span>'}
+],
+adv:[
+{en:"She did it {WORD}, without a single word of complaint.",zh:"她{WORD}地做了，没有一句抱怨的话。",struct:"S+V+O · 主谓宾+方式状语",g:'<span class=\"gr sbj\">S(主): She</span> · <span class=\"gr vb\">V(谓): did it</span> · <span class=\"gr adv\">Adv(状): {WORD}</span> · <span class=\"gr adv\">伴随状语: without a single word of complaint</span>'},
+{en:"Everything changed {WORD} the moment I made my decision.",zh:"我做出决定的那一刻，一切都{WORD}地改变了。",struct:"S+V+O · 主谓+时间状语",g:'<span class=\"gr sbj\">S(主): Everything</span> · <span class=\"gr vb\">V(谓): changed</span> · <span class=\"gr adv\">Adv(状): {WORD}</span> · <span class=\"gr adv\">时间状语: the moment I made my decision</span>'},
+{en:"I {WORD} began to understand what truly mattered in life.",zh:"我{WORD}地开始明白生命中真正重要的是什么。",struct:"S+V+O · 主谓宾+宾语从句",g:'<span class=\"gr sbj\">S(主): I</span> · <span class=\"gr adv\">Adv(状): {WORD}</span> · <span class=\"gr vb\">V(谓): began to understand</span> · <span class=\"gr obj\">O(宾): what truly mattered</span>'},
+{en:"They moved {WORD} through the crowd like a gentle breeze.",zh:"他们像一阵微风一样{WORD}地穿过人群。",struct:"S+V+O · 主谓+方式状语",g:'<span class=\"gr sbj\">S(主): They</span> · <span class=\"gr vb\">V(谓): moved</span> · <span class=\"gr adv\">Adv(状): {WORD} through the crowd</span> · <span class=\"gr adv\">比喻状语: like a gentle breeze</span>'},
+{en:"Time passed {WORD}, and before I knew it the day was over.",zh:"时间{WORD}地流逝，不知不觉一天就过去了。",struct:"并列句 · 主谓+and+结果",g:'<span class=\"gr sbj\">S(主): Time</span> · <span class=\"gr vb\">V(谓): passed</span> · <span class=\"gr adv\">Adv(状): {WORD}</span> · <span class=\"gr adv\">并列结果: and before I knew it the day was over</span>'},
+{en:"She spoke so {WORD} that everyone in the room fell silent.",zh:"她讲话如此{WORD}，房间里所有人都安静了下来。",struct:"S+V+O · 主谓+结果状语",g:'<span class=\"gr sbj\">S(主): She</span> · <span class=\"gr vb\">V(谓): spoke</span> · <span class=\"gr adv\">Adv(状): so {WORD}</span> · <span class=\"gr adv\">结果状语: that everyone fell silent</span>'},
+{en:"He {WORD} agreed to help, which touched me deeply.",zh:"他{WORD}地同意帮助，这让我深受感动。",struct:"S+V+O · 主谓宾+定语从句",g:'<span class=\"gr sbj\">S(主): He</span> · <span class=\"gr adv\">Adv(状): {WORD}</span> · <span class=\"gr vb\">V(谓): agreed to help</span> · <span class=\"gr adv\">定语从句: which touched me deeply</span>'},
+{en:"We walked {WORD} under the stars until dawn broke.",zh:"我们在星空下{WORD}地走着，直到黎明破晓。",struct:"S+Vi · 主谓+时间状语",g:'<span class=\"gr sbj\">S(主): We</span> · <span class=\"gr vb\">V(谓): walked</span> · <span class=\"gr adv\">Adv(状): {WORD} under the stars</span> · <span class=\"gr adv\">时间状语: until dawn broke</span>'},
+{en:"The solution came {WORD} after hours of deep thinking.",zh:"经过数小时的深思熟虑，解决方案{WORD}地出现了。",struct:"S+Vi · 主谓+时间状语",g:'<span class=\"gr sbj\">S(主): The solution</span> · <span class=\"gr vb\">V(谓): came</span> · <span class=\"gr adv\">Adv(状): {WORD}</span> · <span class=\"gr adv\">时间状语: after hours of deep thinking</span>'}
+]
+};
+
+// ============ STORY FRAMEWORKS ============
+var FRAMEWORKS=[
+{title:"平凡日子里的惊喜",en:"Last Tuesday started out like any ordinary day — until it was not.",zh:"上周二和往常一样平凡地开始了——直到一切变得不同。"},
+{title:"一场说走就走的旅行",en:"I had been feeling restless for weeks, so I packed a small bag and set off without a destination in mind.",zh:"我已经焦躁了好几周，于是收拾了一个小包，没有目的地就出发了。"},
+{title:"陌生的朋友",en:"I met someone today who completely changed the way I see the world.",zh:"今天我遇到了一个人，彻底改变了我看世界的方式。"},
+{title:"突破自我",en:"For months, I had been avoiding something I knew I had to face, and today I finally confronted it.",zh:"几个月来，我一直在逃避一件我明知必须面对的事，而今天我终于直面了它。"},
+{title:"深夜的思考",en:"It was late at night, and I found myself unable to sleep, my mind racing with thoughts.",zh:"夜深了，我发现自己无法入睡，思绪万千。"}
+];
+var OUTROS=[
+{en:"That day taught me that remarkable things can happen when you least expect them.",zh:"那一天教会了我：最意想不到的时刻，往往最值得铭记。"},
+{en:"Sometimes the best journeys are the ones you never planned.",zh:"有时候最好的旅程，恰恰是那些压根没计划的。"},
+{en:"A chance encounter had turned into something genuinely meaningful.",zh:"一次偶然的相遇，变成了一段真正有意义的联结。"},
+{en:"When I look back now, I realize the real growth happened inside me.",zh:"如今回望，我发现真正的成长发生在我的内心。"},
+{en:"Sometimes the quietest moments bring the loudest answers.",zh:"有时候最安静的时刻，反而带来最响亮的答案。"}
+];
+
+// ============ STATE ============
+var LEVELS=["primary","middle","high","postgrad","ielts"];
+var LNAMES={primary:"🏫 小学词汇",middle:"📚 初中词汇",high:"🎓 高中词汇",postgrad:"📖 考研词汇",ielts:"🌍 雅思词汇"};
+var curLevel="primary",curWords=[],curStory=null,curSent=-1;
+var favs=JSON.parse(localStorage.getItem("ws_favs_v4")||"[]");
+var theme=localStorage.getItem("ws_theme_v4")||"light";
+
+// ============ WORD TRACKING ============
+function getUsed(level){return JSON.parse(localStorage.getItem("ws_used_"+level)||"[]");}
+function markUsed(level,words){
+  var u=getUsed(level);
+  words.forEach(function(w){if(u.indexOf(w[0])===-1)u.push(w[0]);});
+  localStorage.setItem("ws_used_"+level,JSON.stringify(u));
+}
+function resetUsed(level){localStorage.removeItem("ws_used_"+level);renderLevelBar();regenerate();}
+
+// ============ WORD PICKING ============
+function pickWords(level,n){
+  var all=WB[level].slice(),used=getUsed(level);
+  var unused=[],usedPool=[];
+  all.forEach(function(w){if(used.indexOf(w[0])===-1)unused.push(w);else usedPool.push(w);});
+  var pool=unused.length>=n?unused:unused.concat(usedPool);
+  var picked=[];
+  for(var i=0;i<n&&pool.length>0;i++){
+    var idx=Math.floor(Math.random()*pool.length);
+    picked.push(pool.splice(idx,1)[0]);
+  }
+  return picked;
+}
+
+// ============ HELPERS ============
+function wordSpan(w){
+  var zh=w[1]||"";
+  var ex=w[3]||"";
+  return '<span class="hw" data-w="'+w[0]+'" data-zh="'+zh+'" data-pos="'+w[2]+'" data-ex="'+escapeHTML(ex)+'" onclick="showWordPopup(event,this)">'+w[0]+'</span>';
+}
+function escapeHTML(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function unescapeHTML(s){return s.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"');}
+
+// ============ STORY GENERATION ============
+function genStoryLocal(words){
+  var byPos={n:[],v:[],adj:[],adv:[]};
+  words.forEach(function(w){
+    var pos=w[2];
+    if(pos==="n.")byPos.n.push(w);else if(pos==="v.")byPos.v.push(w);
+    else if(pos==="adj.")byPos.adj.push(w);else if(pos==="adv.")byPos.adv.push(w);
+    else byPos.n.push(w);
+  });
+  var fw=FRAMEWORKS[Math.floor(Math.random()*FRAMEWORKS.length)];
+  var outro=OUTROS[Math.floor(Math.random()*OUTROS.length)];
+  var sentences=[{wi:-1,en:fw.en,zh:fw.zh,struct:"开场句 · Opening",g:""}];
+  var usedP={n:0,v:0,adj:0,adv:0};
+  words.forEach(function(w,i){
+    var pos=w[2],cat=pos==="n."?"n":pos==="v."?"v":pos==="adj."?"adj":pos==="adv."?"adv":"n";
+    var patterns=PATTERNS[cat]||PATTERNS["n"];
+    var pi=usedP[cat]%patterns.length;usedP[cat]++;
+    var pat=patterns[pi];
+    sentences.push({wi:i,en:pat.en.replace("{WORD}",wordSpan(w)),zh:pat.zh.replace("{WORD}",w[1]||w[0]),struct:pat.struct,g:pat.g.replace("{WORD}","<b>"+w[0]+"</b>")});
+  });
+  sentences.push({wi:-1,en:outro.en,zh:outro.zh,struct:"结尾句 · Closing",g:""});
+  return{title:fw.title,sentences:sentences,words:words,level:curLevel};
+}
+
+// ============ RENDER ============
+function renderLevelBar(){
+  document.getElementById("lvBar").innerHTML=LEVELS.map(function(l){
+    var total=WB[l].length,used=getUsed(l).length;
+    return '<span class="lv'+(l===curLevel?" act":"")+'" onclick="setLevel(\''+l+'\')">'+LNAMES[l]+' <span class="lv-n">('+used+'/'+total+'词)</span></span>';
+  }).join("");
+}
+function setLevel(l){curLevel=l;renderLevelBar();regenerate();}
+
+function renderWords(){
+  var total=WB[curLevel].length,used=getUsed(curLevel).length;
+  document.getElementById("pu").textContent=used;
+  document.getElementById("ptotal").textContent=total;
+  document.getElementById("pfill").style.width=(total>0?used/total*100:0)+"%";
+  var doneTag=document.getElementById("doneTag");
+  doneTag.style.display=(used>=total&&total>0)?"inline":"none";
+  document.getElementById("wordTags").innerHTML=curWords.map(function(w){
+    var isUsed=getUsed(curLevel).indexOf(w[0])!==-1;
+    var cls="wt"+(isUsed?" used":"");
+    return '<span class="'+cls+'" onclick="showWordPopup(event,this)" data-w="'+w[0]+'" data-zh="'+(w[1]||"")+'" data-pos="'+w[2]+'" data-ex="'+escapeHTML(w[3]||"")+'">'+w[0]+' <span class="wtpos">'+w[2]+'</span></span>';
+  }).join("");
+}
+
+function renderStory(){
+  curSent=-1;
+  if(!curStory||!curStory.sentences||curStory.sentences.length===0){
+    document.getElementById("stitle").textContent="📖 生成故事中...";
+    document.getElementById("stext").innerHTML="";
+    return;
+  }
+  var html=curStory.sentences.map(function(s,i){
+    var cls="sen-block"+(i===curSent?" active":"");
+    var tooltip=s.zh?('<div class="sen-tooltip"><div class="st-label">📝 中文翻译</div><div class="st-zh">'+s.zh+'</div><div class="st-struct">🏗️ '+s.struct+'</div>'+(s.g?'<div class="st-label" style="margin-top:6px">📐 语法分析</div><div class="st-grammar">'+s.g+'</div>':'')+'</div>'):"";
+    return '<div class="'+cls+'" data-si="'+i+'" onclick="setActiveSent('+i+')"><div class="en-text">'+s.en+'</div>'+tooltip+'</div>';
+  }).join("");
+  document.getElementById("stitle").textContent="📖 "+curStory.title+" · "+LNAMES[curLevel];
+  document.getElementById("stext").innerHTML=html;
+  document.getElementById("stext").querySelectorAll(".hw").forEach(function(el){
+    el.addEventListener("click",function(e){e.stopPropagation();showWordPopup(e,this);});
+  });
+  updateNav();updateFavBtn();
+}
+
+function setActiveSent(i){curSent=i;updateSentActive();updateNav();}
+function updateSentActive(){document.querySelectorAll(".sen-block").forEach(function(s,i){s.classList.toggle("active",i===curSent);});}
+function updateNav(){document.getElementById("pb").disabled=curSent<=0;document.getElementById("nb2").disabled=curSent>=curStory.sentences.length-1;}
+function goNext(){if(curSent>=curStory.sentences.length-1)return;curSent++;updateSentActive();updateNav();}
+function goPrev(){if(curSent<=0)return;curSent--;updateSentActive();updateNav();}
+
+// ============ WORD POPUP ============
+function showWordPopup(e,el){
+  e.stopPropagation();
+  var popup=document.getElementById("wordPopup");
+  document.getElementById("wpWord").textContent=el.dataset.w;
+  document.getElementById("wpPos").textContent=el.dataset.pos;
+  document.getElementById("wpMeaning").textContent=el.dataset.zh||"(释义待补充)";
+  document.getElementById("wpExample").textContent=unescapeHTML(el.dataset.ex||"");
+  var rect=el.getBoundingClientRect();
+  var top=rect.bottom+8,left=rect.left+rect.width/2;
+  if(top+200>window.innerHeight)top=rect.top-210;
+  if(left+180>window.innerWidth)left=window.innerWidth-190;
+  if(left<10)left=10;
+  popup.style.top=top+"px";popup.style.left=left+"px";
+  popup.classList.add("show");
+  clearTimeout(popup._t);
+  popup._t=setTimeout(function(){popup.classList.remove("show");},4000);
+  function closePopup(ev){if(!popup.contains(ev.target)&&ev.target!==el){popup.classList.remove("show");document.removeEventListener("click",closePopup);}}
+  setTimeout(function(){document.addEventListener("click",closePopup);},100);
+}
+
+// ============ SPEECH ============
+function speakSent(){
+  if(curSent<0)curSent=0;updateSentActive();
+  var s=curStory.sentences[curSent];
+  var txt=s.en.replace(/<[^>]+>/g,"");
+  var u=new SpeechSynthesisUtterance(txt);
+  u.lang="en-US";u.rate=0.85;
+  var voices=speechSynthesis.getVoices();
+  var enVoice=voices.find(function(v){return v.lang.startsWith("en")&&v.name.indexOf("Female")!==-1;})||voices.find(function(v){return v.lang.startsWith("en");});
+  if(enVoice)u.voice=enVoice;
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+
+// ============ FAVORITES ============
+function toggleFav(){
+  if(!curStory||curSent<0)return;
+  var s=curStory.sentences[curSent];
+  var w=curStory.words[s.wi];
+  if(!w)return;
+  var key=curStory.level+"/"+w[0];
+  var idx=favs.findIndex(function(f){return f.key===key;});
+  if(idx===-1){
+    favs.push({key:key,level:curStory.level,word:w[0],zh:w[1]||"",pos:w[2],ex:w[3]||"",en:s.en.replace(/<[^>]+>/g,""),zhSent:s.zh,struct:s.struct,time:Date.now()});
+    showToast("⭐ 已收藏");
+  }else{
+    favs.splice(idx,1);
+    showToast("已取消收藏");
+  }
+  updateFavBtn();updateFavCount();save();
+}
+function updateFavBtn(){
+  if(!curStory||curSent<0)return;
+  var s=curStory.sentences[curSent];
+  var w=curStory.words[s.wi];
+  var key=curStory.level+"/"+(w?w[0]:"");
+  var isFav=favs.some(function(f){return f.key===key;});
+  document.getElementById("fb").innerHTML=isFav?"❤️ 已收藏":"🤍 收藏";
+}
+function updateFavCount(){document.getElementById("fc").textContent=favs.length;}
+function toggleFavPanel(){
+  var fp=document.getElementById("fp");
+  if(fp.style.display==="none"){fp.style.display="block";renderFavList();}else{fp.style.display="none";}
+}
+function renderFavList(){
+  if(favs.length===0){document.getElementById("flist").innerHTML='<div style="padding:20px;text-align:center;color:var(--t3)">暂无收藏</div>';document.getElementById("fpdone").textContent="";return;}
+  document.getElementById("fpdone").textContent="共 "+favs.length+" 条";
+  document.getElementById("flist").innerHTML=favs.slice().reverse().map(function(f,i){
+    return '<div class="fi" onclick="loadFav('+(favs.length-1-i)+')"><div class="fn">'+f.word+' <span style="font-size:12px;color:var(--t3)">'+f.pos+'</span></div><div class="fs">'+LNAMES[f.level]+'</div></div>';
+  }).join("");
+}
+function loadFav(idx){
+  var f=favs[idx];
+  if(!f)return;
+  document.getElementById("fp").style.display="none";
+  showToast("收藏内容已加载到预览区");
+  document.getElementById("stitle").textContent="⭐ "+f.word+" · "+LNAMES[f.level];
+  document.getElementById("stext").innerHTML='<div class="sen-block active"><div class="en-text">'+f.en+'</div><div class="sen-tooltip" style="display:block;position:static;transform:none;margin-top:12px"><div class="st-label">📝 中文翻译</div><div class="st-zh">'+f.zhSent+'</div><div class="st-struct">🏗️ '+f.struct+'</div></div></div>';
+  curSent=0;
+}
+
+// ============ REGENERATE ============
+function regenerate(){
+  curWords=pickWords(curLevel,15);
+  markUsed(curLevel,curWords);
+  curStory=genStoryLocal(curWords);
+  renderWords();renderStory();renderLevelBar();
+}
+function resetLevel(){
+  if(confirm("确定要重置 "+LNAMES[curLevel]+" 的学习进度吗？所有已学单词记录将被清除。")){
+    resetUsed(curLevel);
+    showToast("🔄 进度已重置");
+  }
+}
+
+// ============ API GENERATION (placeholder) ============
+function genStoryAPI(){
+  var status=document.getElementById("astatus");
+  status.textContent="API 功能开发中，当前使用本地引擎生成...";
+  setTimeout(function(){regenerate();status.textContent="✅ 已使用本地引擎生成";},500);
+}
+
+// ============ THEME ============
+function toggleTheme(){theme=theme==="dark"?"light":"dark";document.body.setAttribute("data-theme",theme);document.getElementById("tb").textContent=theme==="dark"?"☀️ 亮色":"🌙 暗色";save();}
+function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("on");},3000);}
+function save(){localStorage.setItem("ws_favs_v4",JSON.stringify(favs));localStorage.setItem("ws_theme_v4",theme);}
+
+// ============ KEYBOARD ============
+document.addEventListener("keydown",function(e){if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")return;if(e.key==="ArrowRight"||e.key==="ArrowDown"){e.preventDefault();goNext();}else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault();goPrev();}else if(e.key===" "){e.preventDefault();speakSent();}});
+
+// ============ INIT ============
+function init(){
+  document.body.setAttribute("data-theme",theme);
+  document.getElementById("tb").textContent=theme==="dark"?"☀️ 亮色":"🌙 暗色";
+  document.getElementById("apk").value=localStorage.getItem("ws_apikey_v4")||"";
+  document.getElementById("ape").value=localStorage.getItem("ws_apiendpoint_v4")||"https://api.openai.com/v1/chat/completions";
+  speechSynthesis.getVoices();
+  renderLevelBar();updateFavCount();
+  curWords=pickWords(curLevel,15);
+  markUsed(curLevel,curWords);
+  curStory=genStoryLocal(curWords);
+  renderWords();renderStory();
+}
+init();
+</script>
+</body>
+</html>
